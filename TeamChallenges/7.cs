@@ -19,7 +19,7 @@ namespace SecureLoginAPI
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginModel model)
         {
-            string query = "SELECT * FROM Users WHERE Username = @Username AND Password = @Password";
+            string query = "SELECT * FROM Users WHERE Username = @Username";
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
@@ -27,21 +27,37 @@ namespace SecureLoginAPI
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.Add("@Username", SqlDbType.NVarChar).Value = model.Username;
-                    cmd.Parameters.Add("@Password", SqlDbType.NVarChar).Value = model.Password;
 
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        if (reader.HasRows)
+                        if (reader.Read())
                         {
-                            return Ok("Login Successful");
+                            string storedPasswordHash = reader["Password"].ToString();
+                            if (VerifyPassword(model.Password, storedPasswordHash))
+                            {
+                                return Ok("Login Successful");
+                            }
                         }
-                        else
-                        {
-                            return Unauthorized("Login Failed");
-                        }
+                        return Unauthorized("Login Failed");
                     }
                 }
             }
+        }
+
+        private bool VerifyPassword(string password, string storedPasswordHash)
+        {
+            // Implement password verification logic (e.g., using bcrypt)
+            return BCrypt.Net.BCrypt.Verify(password, storedPasswordHash);
+        }
+
+        // Other methods...
+
+        public class LoginModel
+        {
+            [Required]
+            public string Username { get; set; }
+            [Required]
+            public string Password { get; set; }
         }
 
         // 2. Fix Insecure Password Storage by hashing passwords
