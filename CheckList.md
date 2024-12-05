@@ -1,9 +1,9 @@
 # CheckList
 
 ## Individual Challenges
-- [ ] Access Admin Panel
-- [ ] Add User Input To Cookie
-- [ ] Assign User Input To Inner Html
+- [x] Access Admin Panel
+- [x] Add User Input To Cookie
+- [x] Assign User Input To Inner Html
 - [ ] Authenticate User
 - [ ] Authenticate With Hardcoded Password
 - [ ] Connect With Hardcoded Connection String
@@ -20,9 +20,9 @@
 - [ ] Encrypt With Hardcoded AES Key
 - [ ] Encrypt With Hardcoded Key
 - [ ] Execute Script
-- [ ] Generate Jwt With Hardcoded Secret
-- [ ] Get Product By Name
-- [ ] Get User By Username
+- [x] Generate Jwt With Hardcoded Secret
+- [x] Get Product By Name
+- [x] Get User By Username
 - [ ] Get User Data
 - [ ] Hardcode Username In Session
 - [ ] Hash With MD5
@@ -54,7 +54,7 @@
 - [ ] Set Unlimited Session Timeout
 - [ ] Store Token In Session
 - [ ] Swallow Exception
-- [ ] Throw Generic Exception
+- [x] Throw Generic Exception
 - [ ] Use Hardcoded Api Key
 - [ ] Use Hardcoded Secret Key
 - [ ] Use Hardcoded Windows Identity
@@ -69,7 +69,7 @@
 - [ ] 4
 - [ ] 5
 - [ ] 6
-- [ ] 7
+- [x] 7
 - [ ] 8
 
 ## Scenario based Challenges
