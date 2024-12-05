@@ -1,51 +1,83 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Antiforgery;
 
-namespace InsecureWebAPIWithXSSAndFileOperations
+namespace SecureWebAPI
 {
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
-        // 1. XSS Vulnerability (Injecting user input into HTML without escaping)
+        private readonly IAntiforgery _antiforgery;
+
+        public UserController(IAntiforgery antiforgery)
+        {
+            _antiforgery = antiforgery;
+        }
+
+        // 1. Fixing XSS Vulnerability by encoding user input
         [HttpGet("greet")]
         public IActionResult GreetUser(string username)
         {
-            return Content($"<h1>Welcome, {username}</h1>"); // XSS vulnerability
+            string encodedUsername = System.Net.WebUtility.HtmlEncode(username);
+            return Content($"<h1>Welcome, {encodedUsername}</h1>");
         }
 
-        // 2. Insecure File Handling (Storing data in sensitive locations)
+        // 2. Fixing Insecure File Handling by storing data in a secure directory
         [HttpPost("storeData")]
         public IActionResult StoreData([FromBody] string data)
         {
-            File.WriteAllText("C:\\SensitiveData\\user_info.txt", data); // Writing data to a sensitive location
-            return Ok("Data stored");
+            string securePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SecureData", "user_info.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(securePath));
+            File.WriteAllText(securePath, data);
+            return Ok("Data stored securely");
         }
 
-        // 3. Weak Cryptography (Storing passwords using MD5)
+        // 3. Fixing Weak Cryptography by using a stronger hashing algorithm (SHA256)
         [HttpPost("storePassword")]
         public IActionResult StorePassword([FromBody] string password)
         {
-            string hashedPassword = InsecurePasswordManager.HashPassword(password); // MD5 hash
-            File.WriteAllText("passwords.txt", hashedPassword); // Insecure password storage
-            return Ok("Password stored");
+            string hashedPassword = HashPasswordWithSHA256(password);
+            string securePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SecureData", "passwords.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(securePath));
+            File.WriteAllText(securePath, hashedPassword);
+            return Ok("Password stored securely");
         }
 
-        // 4. CSRF Vulnerability (No token validation for sensitive operations)
+        private string HashPasswordWithSHA256(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in bytes)
+                {
+                    builder.Append(b.ToString("x2"));
+                }
+                return builder.ToString();
+            }
+        }
+
+        // 4. Fixing CSRF Vulnerability by validating anti-forgery tokens
         [HttpPost("updateEmail")]
+        [ValidateAntiForgeryToken]
         public IActionResult UpdateEmail([FromBody] string email)
         {
-            File.WriteAllText("user_email.txt", email); // Vulnerable to CSRF
-            return Ok("Email updated");
+            string securePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SecureData", "user_email.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(securePath));
+            File.WriteAllText(securePath, email);
+            return Ok("Email updated securely");
         }
 
-        // 5. Logging Sensitive Data
+        // 5. Avoid logging sensitive data
         [HttpPost("logUserAction")]
         public IActionResult LogUserAction([FromBody] string action)
         {
-            File.AppendAllText("user_actions.log", $"{DateTime.Now}: {action}\n"); // Logging sensitive actions
-            return Ok("Action logged");
+            // Avoid logging sensitive actions
+            return Ok("Action received but not logged for security reasons");
         }
     }
 }
